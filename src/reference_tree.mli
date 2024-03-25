@@ -28,6 +28,10 @@ type ref_node_data = {
     default_value: string option;
     hidden: bool;
     secret: bool;
+    doc_headline: string;
+    doc_text: string;
+    doc_codeexample: string;
+    doc_hints: string;
 } [@@deriving to_yojson]
 
 type t = ref_node_data Vytree.t [@@deriving to_yojson]

@@ -33,6 +33,10 @@ type ref_node_data = {
     default_value: string option;
     hidden: bool;
     secret: bool;
+    doc_headline: string;
+    doc_text: string;
+    doc_codeexample: string;
+    doc_hints: string;
 } [@@deriving to_yojson]
 
 type t = ref_node_data Vytree.t [@@deriving to_yojson]
@@ -55,6 +59,10 @@ let default_data = {
     default_value = None;
     hidden = false;
     secret = false;
+    doc_headline = "";
+    doc_text = "";
+    doc_codeexample = "";
+    doc_hints = "";
 }
 
 let default = Vytree.make default_data ""
@@ -153,7 +161,11 @@ let data_from_xml d x =
             {d with priority=Some i}
         | Xml.Element ("hidden", _, _) -> {d with hidden=true}
         | Xml.Element ("secret", _, _) -> {d with secret=true}
-        | _ -> raise (Bad_interface_definition "Malformed property tag")
+        | Xml.Element ("doc_headline", _, [Xml.PCData s]) -> {d with doc_headline=s }
+        | Xml.Element ("doc_text", _, [Xml.PCData s]) -> {d with doc_text=s }
+        | Xml.Element ("doc_codeexample", _, [Xml.PCData s]) -> {d with doc_codeexample=s }
+        | Xml.Element ("doc_hints", _, [Xml.PCData s]) -> {d with doc_hints=s }
+        | _ -> raise (Bad_interface_definition "Malformed property tag (docs version)")
     in Xml.fold aux d x
 
 let rec insert_from_xml basepath reftree xml =
