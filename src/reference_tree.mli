@@ -14,6 +14,13 @@ type completion_help_type =
     | Script of string [@name "script"]
     [@@deriving to_yojson]
 
+type docs = {
+        headline: string;
+        text: string;
+        codeexample: string;
+        hints: string;
+    } [@@deriving to_yojson]
+
 type ref_node_data = {
     node_type: node_type;
     constraints: value_constraint list;
@@ -28,10 +35,7 @@ type ref_node_data = {
     default_value: string option;
     hidden: bool;
     secret: bool;
-    doc_headline: string;
-    doc_text: string;
-    doc_codeexample: string;
-    doc_hints: string;
+    docs: docs;
 } [@@deriving to_yojson]
 
 type t = ref_node_data Vytree.t [@@deriving to_yojson]

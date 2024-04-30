@@ -19,6 +19,13 @@ type completion_help_type =
     | Script of string [@name "script"]
     [@@deriving to_yojson]
 
+type docs = {
+        headline: string;
+        text: string;
+        codeexample: string;
+        hints: string;
+    } [@@deriving to_yojson]
+
 type ref_node_data = {
     node_type: node_type;
     constraints: value_constraint list;
@@ -33,10 +40,7 @@ type ref_node_data = {
     default_value: string option;
     hidden: bool;
     secret: bool;
-    doc_headline: string;
-    doc_text: string;
-    doc_codeexample: string;
-    doc_hints: string;
+    docs: docs;
 } [@@deriving to_yojson]
 
 type t = ref_node_data Vytree.t [@@deriving to_yojson]
@@ -59,10 +63,12 @@ let default_data = {
     default_value = None;
     hidden = false;
     secret = false;
-    doc_headline = "";
-    doc_text = "";
-    doc_codeexample = "";
-    doc_hints = "";
+    docs = {
+        headline = "";
+        text = "";
+        codeexample = "";
+        hints = "";
+    };
 }
 
 let default = Vytree.make default_data ""
@@ -161,10 +167,12 @@ let data_from_xml d x =
             {d with priority=Some i}
         | Xml.Element ("hidden", _, _) -> {d with hidden=true}
         | Xml.Element ("secret", _, _) -> {d with secret=true}
-        | Xml.Element ("doc_headline", _, [Xml.PCData s]) -> {d with doc_headline=s }
-        | Xml.Element ("doc_text", _, [Xml.PCData s]) -> {d with doc_text=s }
-        | Xml.Element ("doc_codeexample", _, [Xml.PCData s]) -> {d with doc_codeexample=s }
-        | Xml.Element ("doc_hints", _, [Xml.PCData s]) -> {d with doc_hints=s }
+        | Xml.Element ("docs", _, children) ->
+            let headline = get_pcdata_child "headline" children in
+            let text = get_pcdata_child "text" children in
+            let codeexample = get_pcdata_child "codeexample" children in
+            let hints = get_pcdata_child "hints" children in
+            {d with docs={headline=headline; text=text; codeexample=codeexample; hints=hints}}
         | _ -> raise (Bad_interface_definition "Malformed property tag (docs version)")
     in Xml.fold aux d x
 
