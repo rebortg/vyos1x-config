@@ -15,10 +15,10 @@ type completion_help_type =
     [@@deriving to_yojson]
 
 type docs = {
-        headline: string;
-        text: string;
-        codeexample: string;
-        hints: string;
+    headline: string;
+    text: string;
+    codeexample: string;
+    hints: string;
     } [@@deriving to_yojson]
 
 type ref_node_data = {

@@ -151,6 +151,16 @@ let load_constraint_from_xml d c =
         | _ -> raise (Bad_interface_definition "Malformed constraint")
     in Xml.fold aux d c
 
+let load_docs_from_xml d x =
+    let aux d x =
+        match x with
+        | Xml.Element ("headline", _, [Xml.PCData s]) ->  {d with headline=s}
+        | Xml.Element ("text", _, [Xml.PCData s]) ->  {d with headline=s}
+        | Xml.Element ("hints", _, [Xml.PCData s]) ->  {d with headline=s}
+        | Xml.Element ("codeexample", _, [Xml.PCData s]) ->  {d with headline=s}
+        | _ -> raise (Bad_interface_definition "Malformed docs")
+    in Xml.fold aux d x
+
 let data_from_xml d x =
     let aux d x =
         match x with
@@ -167,12 +177,7 @@ let data_from_xml d x =
             {d with priority=Some i}
         | Xml.Element ("hidden", _, _) -> {d with hidden=true}
         | Xml.Element ("secret", _, _) -> {d with secret=true}
-        | Xml.Element ("docs", _, children) ->
-            let headline = get_pcdata_child "headline" children in
-            let text = get_pcdata_child "text" children in
-            let codeexample = get_pcdata_child "codeexample" children in
-            let hints = get_pcdata_child "hints" children in
-            {d with docs={headline=headline; text=text; codeexample=codeexample; hints=hints}}
+        | Xml.Element ("docs", _, _) -> load_docs_from_xml d x
         | _ -> raise (Bad_interface_definition "Malformed property tag (docs version)")
     in Xml.fold aux d x
 
