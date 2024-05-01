@@ -154,10 +154,10 @@ let load_constraint_from_xml d c =
 let load_docs_from_xml d x =
     let aux d x =
         match x with
-        | Xml.Element ("headline", _, [Xml.PCData s]) ->  {d with headline=s}
-        | Xml.Element ("text", _, [Xml.PCData s]) ->  {d with headline=s}
-        | Xml.Element ("hints", _, [Xml.PCData s]) ->  {d with headline=s}
-        | Xml.Element ("codeexample", _, [Xml.PCData s]) ->  {d with headline=s}
+        | Xml.Element ("headline", _, [Xml.PCData s]) -> let new_docs = {d.docs with headline = s} in {d with docs = new_docs}
+        | Xml.Element ("text", _, [Xml.PCData s]) -> let new_docs = {d.docs with text = s} in {d with docs = new_docs}
+        | Xml.Element ("hints", _, [Xml.PCData s]) -> let new_docs = {d.docs with hints = s} in {d with docs = new_docs}
+        | Xml.Element ("codeexample", _, [Xml.PCData s]) -> let new_docs = {d.docs with codeexample = s} in {d with docs = new_docs}
         | _ -> raise (Bad_interface_definition "Malformed docs")
     in Xml.fold aux d x
 
