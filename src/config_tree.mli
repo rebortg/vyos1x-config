@@ -10,6 +10,7 @@ type config_node_data = {
   values : string list;
   comment : string option;
   tag : bool;
+  leaf: bool;
 } [@@deriving yojson]
 
 type t = config_node_data Vytree.t [@@deriving yojson]
@@ -17,6 +18,8 @@ type t = config_node_data Vytree.t [@@deriving yojson]
 val default_data : config_node_data
 
 val make : string -> t
+
+val create_node : t -> string list -> t
 
 val set : t -> string list -> string option -> value_behaviour -> t
 
@@ -33,6 +36,10 @@ val get_comment : t -> string list -> string option
 val set_tag : t -> string list -> bool -> t
 
 val is_tag : t -> string list -> bool
+
+val set_leaf : t -> string list -> bool -> t
+
+val is_leaf : t -> string list -> bool
 
 val get_subtree : ?with_node:bool -> t -> string list -> t
 

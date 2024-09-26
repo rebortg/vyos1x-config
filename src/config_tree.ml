@@ -10,6 +10,7 @@ type config_node_data = {
     values: string list;
     comment: string option;
     tag: bool;
+    leaf: bool;
 } [@@deriving yojson]
 
 type t = config_node_data Vytree.t [@@deriving yojson]
@@ -18,6 +19,7 @@ let default_data = {
     values = [];
     comment = None;
     tag = false;
+    leaf = false;
 }
 
 let make name = Vytree.make default_data name
@@ -51,6 +53,13 @@ let set_value node path value behaviour =
     | AddValue -> add_value node path value
     | ReplaceValue -> replace_value node path value
 
+let create_node node path =
+    if (Vytree.exists node path) then raise Useless_set
+    else
+        let path_existing = Vytree.get_existent_path node path in
+        let path_remaining = Vylist.complement path path_existing in
+        Vytree.insert_multi_level default_data node path_existing path_remaining default_data
+
 let set node path value behaviour =
     if (Vytree.exists node path) then
         (match value with
@@ -60,7 +69,8 @@ let set node path value behaviour =
         let path_existing = Vytree.get_existent_path node path in
         let path_remaining = Vylist.complement path path_existing in
         let values = match value with None -> [] | Some v -> [v] in
-        Vytree.insert_multi_level default_data node path_existing path_remaining {default_data with values=values}
+        let end_data = {default_data with values=values; leaf=true} in
+        Vytree.insert_multi_level default_data node path_existing path_remaining end_data
 
 let get_values node path =
     let node' = Vytree.get node path in
@@ -101,6 +111,14 @@ let is_tag node path =
     let data = Vytree.get_data node path in
     data.tag
 
+let set_leaf node path leaf =
+    let data = Vytree.get_data node path in
+    Vytree.update node path {data with leaf=leaf}
+
+let is_leaf node path =
+    let data = Vytree.get_data node path in
+    data.leaf
+
 let get_subtree ?(with_node=false) node path =
     try
         let n = Vytree.get node path in
@@ -132,13 +150,12 @@ struct
         (* Now handle the different cases for nodes with and without children *)
         match child_names with
         | [] ->
-             (* This is a leaf node *)
              let values = List.map Util.escape_string data.values in
              let cmds =
                  begin
                  match values with
                  | [] ->
-                      (* Valueless leaf node *)
+                      (* Valueless leaf node or a non-leaf node *)
                       String.concat " " new_path |> Printf.sprintf "%s %s" (op_to_string op)
                  | [v] ->
                       (* Single value, just one command *)
@@ -150,7 +167,6 @@ struct
               in
               if comment_cmd = "" then cmds else Printf.sprintf "%s\n%s" cmds comment_cmd
         | _ :: _ ->
-            (* A node with children *)
             let children = List.map (fun n -> Vytree.get ct [n]) child_names in
             let rendered_children = List.map (render_commands ~op:op new_path) children in
             let cmds = String.concat "\n" rendered_children in
@@ -184,10 +200,14 @@ struct
     let data = Vytree.data_of_node node in
     let is_tag = data.tag in 
     let comment = render_comment indent_str data.comment in
-    let values = render_values ~ord_val:ord_val indent_str name data.values in
     let children = Vytree.children_of_node node in
     match children with
-    | [] -> Printf.sprintf "%s%s" comment values
+    | [] ->
+      if data.leaf then
+        let values = render_values ~ord_val:ord_val indent_str name data.values in
+        Printf.sprintf "%s%s" comment values
+      else
+        Printf.sprintf "%s%s%s {\n%s}\n" comment indent_str name indent_str
     | _ :: _ ->
       if is_tag then 
         begin
