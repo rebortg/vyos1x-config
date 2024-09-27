@@ -19,6 +19,13 @@ type completion_help_type =
     | Script of string [@name "script"]
     [@@deriving to_yojson]
 
+type docs = {
+        headline: string;
+        text: string;
+        codeexample: string;
+        hints: string;
+    } [@@deriving to_yojson]
+
 type ref_node_data = {
     node_type: node_type;
     constraints: value_constraint list;
@@ -34,6 +41,7 @@ type ref_node_data = {
     default_value: string option;
     hidden: bool;
     secret: bool;
+    docs: docs;
 } [@@deriving to_yojson]
 
 type t = ref_node_data Vytree.t [@@deriving to_yojson]
@@ -57,6 +65,12 @@ let default_data = {
     default_value = None;
     hidden = false;
     secret = false;
+        docs = {
+        headline = "";
+        text = "";
+        codeexample = "";
+        hints = "";
+    };
 }
 
 let default = Vytree.make default_data ""
@@ -154,6 +168,16 @@ let load_constraint_group_from_xml d c =
         | _ -> raise (Bad_interface_definition "Malformed constraint")
     in Xml.fold aux d c
 
+let load_docs_from_xml d x =
+    let aux d x =
+        match x with
+        | Xml.Element ("headline", _, [Xml.PCData s]) -> let new_docs = {d.docs with headline = s} in {d with docs = new_docs}
+        | Xml.Element ("text", _, [Xml.PCData s]) -> let new_docs = {d.docs with text = s} in {d with docs = new_docs}
+        | Xml.Element ("hints", _, [Xml.PCData s]) -> let new_docs = {d.docs with hints = s} in {d with docs = new_docs}
+        | Xml.Element ("codeexample", _, [Xml.PCData s]) -> let new_docs = {d.docs with codeexample = s} in {d with docs = new_docs}
+        | _ -> raise (Bad_interface_definition "Malformed docs")
+    in Xml.fold aux d x
+
 let data_from_xml d x =
     let aux d x =
         match x with
@@ -171,6 +195,7 @@ let data_from_xml d x =
             {d with priority=Some i}
         | Xml.Element ("hidden", _, _) -> {d with hidden=true}
         | Xml.Element ("secret", _, _) -> {d with secret=true}
+        | Xml.Element ("docs", _, _) -> load_docs_from_xml d x
         | _ -> raise (Bad_interface_definition "Malformed property tag")
     in Xml.fold aux d x
 
