@@ -41,12 +41,12 @@ let add_value node path value =
   | Some _ -> raise Duplicate_value
   | None ->
     let values = values @ [value] in
-    Vytree.update node path ({data with values=values})
+    Vytree.update node path ({data with values=values; leaf=true})
 
 let delete_value node path value =
     let data = Vytree.data_of_node @@ Vytree.get node path in
     let values = Vylist.remove (fun x -> x = value) data.values in
-    Vytree.update node path {data with values=values}
+    Vytree.update node path {data with values=values; leaf=true}
 
 let set_value node path value behaviour =
     match behaviour with
