@@ -30,7 +30,7 @@ let op_to_string op =
     | Delete -> "delete"
 
 let replace_value node path value =
-  let data = {default_data with values=[value]} in
+  let data = {default_data with values=[value]; leaf=true} in
   Vytree.update node path data
 
 let add_value node path value =
