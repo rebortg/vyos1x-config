@@ -49,10 +49,10 @@ value:
 leaf_node_body:
   | comment = comments;
     name = IDENTIFIER; value = value;
-    { Vytree.make_full {default_data with values=[value]; comment=comment} name []}
+    { Vytree.make_full {default_data with values=[value]; comment=comment; leaf=true} name []}
   | comment = comments;
     name = IDENTIFIER; (* valueless node *)
-    { Vytree.make_full {default_data with comment=comment} name [] }
+    { Vytree.make_full {default_data with comment=comment; leaf=true} name [] }
 ;
 
 leaf_node:
