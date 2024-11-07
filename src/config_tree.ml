@@ -22,6 +22,8 @@ let default_data = {
     leaf = false;
 }
 
+let default = Vytree.make default_data ""
+
 let make name = Vytree.make default_data name
 
 let op_to_string op =
@@ -286,6 +288,14 @@ let render_commands ?(op=Set) node path =
     String.concat "\n" commands
 
 let render_config ?(ord_val=false) = Renderer.render_config ~ord_val:ord_val
+
+let render_at_level node path =
+    let node =
+        match path with
+        | [] -> node
+        | _ -> Vytree.get node path
+    in
+    render_config node
 
 let render_json = JSONRenderer.render_json
 

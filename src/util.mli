@@ -9,3 +9,9 @@ val default : 'a -> 'a option -> 'a
 val lexical_numeric_compare : string -> string -> int
 
 val absolute_path : FilePath.filename -> FilePath.filename
+
+val string_of_list : string list -> string
+
+val json_of_list : string list -> string
+
+val list_of_path : string -> string list

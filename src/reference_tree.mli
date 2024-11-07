@@ -3,21 +3,16 @@ type node_type =
     | Tag
     | Other
 
-type value_constraint =
-    | Regex of string [@name "regex"]
-    | External of string * string option [@name "exec"]
-    [@@deriving yojson]
-
 type completion_help_type =
     | List of string [@name "list"]
     | Path of string [@name "path"]
     | Script of string [@name "script"]
-    [@@deriving to_yojson]
+    [@@deriving yojson]
 
 type ref_node_data = {
     node_type: node_type;
-    constraints: value_constraint list;
-    constraint_group: value_constraint list;
+    constraints: Value_checker.value_constraint list;
+    constraint_group: Value_checker.value_constraint list;
     constraint_error_message: string;
     completion_help: completion_help_type list;
     help: string;
@@ -29,9 +24,9 @@ type ref_node_data = {
     default_value: string option;
     hidden: bool;
     secret: bool;
-} [@@deriving to_yojson]
+} [@@deriving yojson]
 
-type t = ref_node_data Vytree.t [@@deriving to_yojson]
+type t = ref_node_data Vytree.t [@@deriving yojson]
 
 exception Bad_interface_definition of string
 
@@ -42,6 +37,12 @@ val default_data : ref_node_data
 val default : t
 
 val load_from_xml : t -> string -> t
+
+val find_xml_child : string -> Xml_light_types.xml -> Xml_light_types.xml option
+
+val validate_path : string -> t -> string list -> unit
+
+val split_path : t -> string list -> string list * string option
 
 val is_multi : t -> string list -> bool
 
@@ -62,5 +63,7 @@ val get_help_string : t -> string list -> string
 val get_value_help : t -> string list -> (string * string) list
 
 val get_completion_data : t -> string list -> (node_type * bool * string) list
+
+val refpath : t -> string list -> string list
 
 val render_json : t -> string
